@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Choose Animal & Upload File</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 20px; }
+  .container { display: flex; gap: 40px; }
+  .box { border: 1px solid #ccc; padding: 20px; width: 300px; }
+  img { max-width: 100%; height: auto; margin-top: 15px; }
+  #file-info { margin-top: 10px; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- Animal Selection Box -->
+  <div class="box" id="animalBox">
+    <h3>Select One Animal</h3>
+    <label><input type="checkbox" name="animal" value="cat"> Cat</label><br/>
+    <label><input type="checkbox" name="animal" value="dog"> Dog</label><br/>
+    <label><input type="checkbox" name="animal" value="elephant"> Elephant</label><br/>
+    <img id="animalImage" src="" alt="" style="display:none;" />
+  </div>
+
+  <!-- File Upload Box -->
+  <div class="box">
+    <h3>Upload a File</h3>
+    <input type="file" id="fileInput" />
+    <button id="uploadBtn">Upload</button>
+    <div id="file-info"></div>
+  </div>
+
+</div>
+
+<script>
+  // Animal image mapping (all images stored in static folder)
+  const animalImages = {
+    cat: '/static/cat.jpg',
+    dog: '/static/dog.jpg',
+    elephant: '/static/elephant.jpg'
+  };
+
+  const checkboxes = document.querySelectorAll('input[name="animal"]');
+  const animalImage = document.getElementById('animalImage');
+
+  // Make checkboxes act like radio buttons (only one checked)
+  checkboxes.forEach(box => {
+    box.addEventListener('change', function() {
+      if(this.checked) {
+        checkboxes.forEach(cb => {
+          if(cb !== this) cb.checked = false;
+        });
+        animalImage.src = animalImages[this.value];
+        animalImage.style.display = 'block';
+      } else {
+        animalImage.style.display = 'none';
+      }
+    });
+  });
+
+  // Handle file upload
+  document.getElementById('uploadBtn').addEventListener('click', () => {
+    const fileInput = document.getElementById('fileInput');
+    if(fileInput.files.length === 0) {
+      alert('Please select a file first');
+      return;
+    }
+    const file = fileInput.files[0];
+    const formData = new FormData();
+    formData.append('file', file);
+
+    fetch('/upload', {
+      method: 'POST',
+      body: formData
+    }).then(res => res.json())
+      .then(data => {
+        if(data.error) {
+          document.getElementById('file-info').innerText = 'Error: ' + data.error;
+        } else {
+          document.getElementById('file-info').innerText = 
+            `File Name: ${data.filename}\nFile Size: ${data.filesize_bytes} bytes\nFile Type: ${data.filetype}`;
+        }
+      })
+      .catch(err => {
+        document.getElementById('file-info').innerText = 'Upload failed.';
+      });
+  });
+</script>
+
+</body>
+</html>
