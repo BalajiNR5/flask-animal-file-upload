@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, jsonify
 import os
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder="static", template_folder="templates")
 app.config['UPLOAD_FOLDER'] = './uploads'
 
 @app.route('/')
@@ -23,6 +23,11 @@ def upload():
         'filesize_bytes': file_size
     })
 
-# IMPORTANT: do not run app.run() on Vercel
-if not os.path.exists(app.config['UPLOAD_FOLDER']):
-    os.makedirs(app.config['UPLOAD_FOLDER'])
+# Vercel does not run app.run(), just expose `app`
+if __name__ != "__main__":
+    application = app  # 👈 Expose as "application" for gunicorn/vercel
+
+if __name__ == "__main__":
+    if not os.path.exists(app.config['UPLOAD_FOLDER']):
+        os.makedirs(app.config['UPLOAD_FOLDER'])
+    app.run(debug=True)
