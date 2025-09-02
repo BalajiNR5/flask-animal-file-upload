@@ -16,16 +16,13 @@ def upload():
     filename = file.filename
     file_type = file.content_type
     file_size = len(file.read())
-    file.seek(0)  # Reset pointer if you want to save the file later
-    # Optionally save the file: file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+    file.seek(0)  # reset pointer if you want to save later
     return jsonify({
         'filename': filename,
         'filetype': file_type,
         'filesize_bytes': file_size
     })
 
-if __name__ == '__main__':
-    if not os.path.exists(app.config['UPLOAD_FOLDER']):
-        os.makedirs(app.config['UPLOAD_FOLDER'])
-
-
+# IMPORTANT: do not run app.run() on Vercel
+if not os.path.exists(app.config['UPLOAD_FOLDER']):
+    os.makedirs(app.config['UPLOAD_FOLDER'])
